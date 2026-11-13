@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Feliz Cumpleaños, Mi Girasolito! ❤️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#fbeee9',
+                            200: '#f5dcd2',
+                            300: '#eabfb1',
+                            400: '#dc9784',
+                            500: '#cb7159',
+                            600: '#b85a42',
+                            700: '#9b4834',
+                            800: '#7e3d2d',
+                            900: '#683528',
+                            950: '#381a13',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fdf8f6;
+            background-image: radial-gradient(#eabfb1 0.75px, #fdf8f6 0.75px);
+            background-size: 24px 24px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 30px -5px rgba(203, 113, 89, 0.1);
+        }
+    </style>
+</head>
+<body class="text-brand-900 min-h-screen flex flex-col justify-between selection:bg-brand-200">
+
+    <!-- Header / Portada -->
+    <header class="w-full max-w-2xl mx-auto px-6 pt-12 pb-8 text-center">
+        <div class="inline-block bg-brand-100 border border-brand-200 text-brand-700 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-4 shadow-sm">
+            ✨ Edición Especial de Cumpleaños ✨
+        </div>
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-brand-900 tracking-tight mb-4">
+            ¡Feliz Cumpleaños, Mi Girasolito! ❤️
+        </h1>
+        <p class="text-brand-700 text-base sm:text-lg max-w-lg mx-auto font-light leading-relaxed">
+            He preparado 6 cartas especiales para ti. Cada una guarda un pedacito de lo que siento y solo podrá abrirse cuando yo te dé la clave de autorización. Al final, te espera una sorpresa extra.
+        </p>
+        <div class="mt-6 flex items-center justify-center space-x-2">
+            <span class="h-px w-12 bg-brand-300"></span>
+            <span class="text-brand-500">💛</span>
+            <span class="h-px w-12 bg-brand-300"></span>
+        </div>
+    </header>
+
+    <!-- Contenido Principal: Las 6 Cartas -->
+    <main class="w-full max-w-2xl mx-auto px-6 mb-16">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="font-serif text-2xl font-bold text-brand-900">Tus 6 Cartas Secretas</h2>
+                <p class="text-xs text-brand-600 mt-0.5">Toca una carta para solicitar autorización y descubrir su mensaje.</p>
+            </div>
+            <div id="counter-badge" class="bg-brand-100 text-brand-800 border border-brand-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                0 de 6 abiertas
+            </div>
+        </div>
+
+        <!-- Contenedor de las Cartas -->
+        <div id="cards-container" class="space-y-4">
+            <!-- Las cartas se generan dinámicamente mediante JavaScript -->
+        </div>
+
+        <!-- SECCIÓN DE CUPONERA -->
+        <section class="mt-16 pt-12 border-t border-brand-200">
+            <div class="text-center mb-8">
+                <span class="text-xs uppercase tracking-widest text-brand-500 font-semibold block mb-1">Para disfrutar juntos</span>
+                <h2 class="font-serif text-3xl font-bold text-brand-900">Tu Cuponera de Cumpleaños</h2>
+                <p class="text-sm text-brand-600 mt-2 max-w-md mx-auto">
+                    Cuando quieras hacer válido alguno de tus regalos, presiona "Redimir Cupón", tómale captura de pantalla y envíamela para hacerlo realidad.
+                </p>
+            </div>
+
+            <div id="coupons-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Los cupones se generan dinámicamente -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de Contraseña -->
+    <div id="password-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-brand-100 text-center transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                🔒
+            </div>
+            <h3 class="font-serif text-xl font-bold text-brand-900 mb-1">Carta Protegida</h3>
+            <p id="modal-subtitle" class="text-xs text-brand-600 mb-4">Ingresa la clave maestra que te daré para abrir la carta.</p>
+            
+            <form id="password-form" onsubmit="verifyPassword(event)">
+                <input type="password" id="password-input" placeholder="Escribe la clave aquí..." autocomplete="off"
+                    class="w-full px-4 py-3 rounded-xl border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-center text-lg tracking-widest mb-4 bg-brand-50 text-brand-900 placeholder:text-brand-300 placeholder:text-sm placeholder:tracking-normal">
+                
+                <div id="error-msg" class="text-red-500 text-xs mb-3 hidden font-medium">Contraseña incorrecta, amor. Pídeme la clave.</div>
+
+                <div class="flex space-x-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-2.5 px-4 rounded-xl border border-brand-200 text-brand-700 font-medium text-sm hover:bg-brand-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-brand-600 text-white font-medium text-sm hover:bg-brand-700 transition-colors shadow-sm">
+                        Abrir Carta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Redimir Cupón -->
+    <div id="coupon-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-brand-100 text-center transform transition-all" id="coupon-modal-content">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                🎉
+            </div>
+            <h3 class="font-serif text-xl font-bold text-brand-900 mb-1">¡Cupón Redimido!</h3>
+            <p id="coupon-modal-title" class="text-sm font-semibold text-brand-700 mb-2"></p>
+            <p class="text-xs text-brand-500 mb-6" id="coupon-timestamp"></p>
+            
+            <div class="bg-brand-50 border border-brand-200 rounded-xl p-3 text-xs text-brand-800 mb-6">
+                📸 Tómale captura de pantalla a este mensaje y envíaselo a Jonathan para hacerlo válido de inmediato.
+            </div>
+
+            <button onclick="closeCouponModal()" class="w-full py-2.5 px-4 rounded-xl bg-brand-600 text-white font-medium text-sm hover:bg-brand-700 transition-colors shadow-sm">
+                Entendido, ¡a cobrarlo!
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Configuración / Personalización -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-brand-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-serif text-xl font-bold text-brand-900">Personalizar Contraseña y Textos</h3>
+                <button onclick="closeSettingsModal()" class="text-brand-400 hover:text-brand-700 font-bold text-lg">&times;</button>
+            </div>
+            <p class="text-xs text-brand-600 mb-4">Aquí puedes cambiar la clave maestra o editar los textos de tus cartas directamente en este navegador.</p>
+            
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-brand-800 uppercase mb-1">Contraseña Maestra:</label>
+                <input type="text" id="setting-master-password" class="w-full px-3 py-2 rounded-lg border border-brand-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div id="settings-cards-list" class="space-y-4 mb-6">
+                <!-- Se llena con JS -->
+            </div>
+
+            <div class="flex space-x-2">
+                <button onclick="closeSettingsModal()" class="flex-1 py-2.5 rounded-xl border border-brand-200 text-brand-700 text-sm font-medium">Cancelar</button>
+                <button onclick="saveSettings()" class="flex-1 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium shadow-sm">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-2xl mx-auto px-6 py-8 text-center border-t border-brand-200 mt-auto text-xs text-brand-600">
+        <p class="mb-2">Hecho con todo mi amor para celebrar tu vida ❤️</p>
+        <div class="flex items-center justify-center space-x-4">
+            <button onclick="openSettingsModal()" class="hover:underline flex items-center space-x-1">
+                <span>🔑</span>
+                <span>Personalizar cartas y clave</span>
+            </button>
+            <span>•</span>
+            <button onclick="resetProgress()" class="hover:underline text-brand-500 hover:text-brand-700">
+                Reiniciar progreso
+            </button>
+        </div>
+    </footer>
+
+    <!-- Script de lógica -->
+    <script>
+        const defaultPassword = "AMOR2026";
+        
+        let defaultCards = [
+            {
+                id: 1,
+                title: "Carta 1: Despertar de Cumpleaños & Compras",
+                preview: "Buenos días mi girasolito... Tu primer regalo y plan del día.",
+                content: `Buenos días mi girasolito<br><br>
+Espero encontrarte durmiendo para darte el besito del precumple, esta sería la primera cartica. La idea es ir haciendo cositas y mientras vas terminando una tendrás la otra carta.<br><br>
+Mi amor iniciando quiero decir que eres el mayor regalo de este mundo y es difícil comparar eso con cosas materiales. Así que el primer regalo será un besito x100000.<br><br>
+Jejejje bueno y el segundo pues será el primer plan del día de hoy, sé que quieres ropita así que vamos a ir de compras mi BOM. Tienes hasta 500.000 pesos colombianos (no fueran argentinos ni peruanos, fueran colombianos) para ir a la ropita. Ya tú decides dónde, si hay en El Tunal, o el centro, o por Shein. Ya tú eliges.<br><br>
+Quería comprarla yo la ropita pero pues qué tal sean cosas que no te gusten o cositas así. Entonces pues no amor, prefiero que tú elijas como diría la de las lentejas: <em>"a mi gusto, a mi modo"</em> jajajaja 🤣.<br><br>
+Te amo pues.<br>
+Completa las compras y seguimos con la siguiente carta, es necesario estar libres a las 3:30.<br><br>
+Te amo mi vida.<br>
+¡Ah pues levántate y a bañar pues!`
+            },
+            {
+                id: 2,
+                title: "Carta 2: Momento de Relajación",
+                preview: "Hola BOM... Nos vamos al spa a relajarnos un ratito.",
+                content: `Hola BOM<br><br>
+Tú siempre te ves bien preciosa y con lo que me has modelado hoy mucho más. Ahora vamos a ir a disfrutar algo que no tiene que ver con la ropa, pues vamos a relajarnos un ratito.<br><br>
+Iremos a un spa donde nos hacen el masajito y nos estamos en el jacuzzi.<br><br>
+Es un ratito no más, espero lo disfrutes demasiado mi niña. Te amo mucho, mi regalo de Dios y los angelitos, eres la mujer más inteligente y hermosa de este mundo pues.<br><br>
+¡Ah pues vámonos pues que yo creo que vamos tarde! Pero si no hemos comido, comamos algo tranqui.<br><br>
+Te amooooo ❤️`
+            },
+            {
+                id: 3,
+                title: "Carta 3: Antojo de Patacones",
+                preview: "Mi amooooor, qué tal los masajitos... ¡A por la comida!",
+                content: `Mi amooooor, ¿qué tal los masajitos?<br><br>
+¡Ah pues te ves bien rica sin ropita jejejeje! Otro día yo te hago más masajitos.<br><br>
+Bueno, ahora adivina adivina... Iremos por comida pues, porque yo creo que debes tener hambre. La reserva probablemente la haré como a las 6:30 o 7, te estaré diciendo cómo para no estar corriendo.<br><br>
+Iremos a un lugar que te quise llevar hace ratito, al de unos patacones que cuando fuimos ya no existía jajajaja.<br><br>
+Pero bueno amor, esta vez espero sí esté. Esta es la última carta del día, nos veremos mañana tempranito con la carta siguiente.<br><br>
+Te amo mi amor. Feliz cumpleaños, espero disfrutes mucho y seas muy feliz.<br><br>
+Es lo que más espero en este mundo: que seas feliz, logres todo lo que te propongas y más que todo que disfrutes cada momento.`
+            },
+            {
+                id: 4,
+                title: "Carta 4: ¡Feliz Cumpleaños Oficial!",
+                preview: "Mi amooooor feliz cumpleaños... El regalito y el almuerzo.",
+                content: `Mi amooooor, feliz cumpleaños, eres lo mejor, eres el amor de mi vida, mi luz, mi girasolito, mi sandiita sin pepas, mi preciosa, mi niña de la maestría y mi futura esposa pues.<br><br>
+Te amo mi amor, espero este nuevo año traiga muchas bendiciones, muchos besitos, muchos avances y más que todo felicidad y tranquilidad a tu vida.<br><br>
+Te amo mi amor, siempre estaremos juntos, tomando muchos juguitos pues.<br><br>
+Bueno, creería yo que estás en pijama, así que es probable que desayunemos y luego te bañas y vistes bien hermosa, es momento de darte el regalito que está en la caja que creo que ya chismoseaste jajaja, pero es el regalito pues. Bueno, báñate mi niña y te vistes bien preciosa que iremos allí cerca al almuerzo. Espero te guste mucho.<br><br>
+Te amooooo, que cumplas muchos más pues.<br>
+Y tus cupones tienes que reclamarlos pues ❤️`
+            },
+            {
+                id: 5,
+                title: "Carta 5: Atardecer y Descanso",
+                preview: "Mi amor pues creo yo que se nos fue el día jajajaa...",
+                content: `Mi amor, pues creo yo que se nos fue el día jajajaa ya acabaría el asadito y te tomarás el algo, te amo mi niña de las vacas asadas con mazorca.<br><br>
+Bueno, lo siguiente es descansar y espero que durmiendo juntitos jejejeje.<br><br>
+Descansa amor.<br><br>
+Te amo demasiado, espero disfrutes tanto todo, tendremos mañana un día más calmado jejeje. Pueda que sea bien tarde así que te ganas el besito.<br><br>
+Eres lo mejor del mundo.<br><br>
+Te amo hasta el infinito pues.`
+            },
+            {
+                id: 6,
+                title: "Carta 6: Cierre y Estudio",
+                preview: "Meno amor... Esta ya es la última cartica pues.",
+                content: `Meno amor<br><br>
+Esta ya es la última cartica pues, es para levantarnos y mi plan es descansar en la casita, pueda que vayamos por el postre y a comer, pero ya vamos viendo depende de cómo amanezcamos y creo que tienes que estudiar o entregar cosas así que pues tenemos el día para el estudio o las películas o las dos pues.<br><br>
+Jejeje te amo mi niña, eres mi mejor, te ganas el besito y que te lo haga bien rico siempre a pues te amo mi niña. Sigue siendo la mejor y sigue creciendo como persona, eres muy inteligente, me pones bien orgulloso el saber que al lado mío está alguien que admiro demasiado.<br><br>
+Te amo mi niña.<br>
+¡Ah pues dame el besito pues! ❤️`
+            }
+        ];
+
+        let coupons = [
+            { id: 1, title: "Vale por una cena", desc: "Canjeable para una salida a comer delicioso juntos.", redeemed: false },
+            { id: 2, title: "Vale por lo que quieras", desc: "Un capricho o antojo especial autorizado por mí.", redeemed: false },
+            { id: 3, title: "Vale para un postre", desc: "Para endulzar el día con algo rico.", redeemed: false },
+            { id: 4, title: "Vale para unos besos", desc: "Besos x100000 en cualquier momento y lugar.", redeemed: false },
+            { id: 5, title: "Vale por un masaje", desc: "Masajito relajante garantizado sin excusas.", redeemed: false },
+            { id: 6, title: "Vale por un semestre de maestría", desc: "El premio mayor para apoyar tu brillante futuro profesional 🎓❤️", redeemed: false }
+        ];
+
+        let currentPassword = localStorage.getItem('master_password') || defaultPassword;
+        let savedCards = JSON.parse(localStorage.getItem('cards_data')) || defaultCards;
+        let unlockedCards = JSON.parse(localStorage.getItem('unlocked_cards')) || [];
+        let savedCoupons = JSON.parse(localStorage.getItem('coupons_data')) || coupons;
+
+        let activeCardId = null;
+
+        function renderCards() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            let openedCount = unlockedCards.length;
+            document.getElementById('counter-badge').innerText = `${openedCount} de 6 abiertas`;
+
+            savedCards.forEach((card) => {
+                const isUnlocked = unlockedCards.includes(card.id);
+                const cardEl = document.createElement('div');
+                cardEl.className = `bg-white rounded-2xl border transition-all duration-300 overflow-hidden card-shadow ${isUnlocked ? 'border-brand-300' : 'border-brand-100 hover:border-brand-300'}`;
+
+                if (isUnlocked) {
+                    cardEl.innerHTML = `
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold text-brand-600 uppercase tracking-wider flex items-center space-x-1">
+                                    <span>💌</span> <span>Carta ${card.id} (Abierta)</span>
+                                </span>
+                                <span class="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">Autorizada</span>
+                            </div>
+                            <h3 class="font-serif text-xl font-bold text-brand-900 mb-3">${card.title}</h3>
+                            <div class="text-brand-800 text-sm leading-relaxed space-y-3 font-normal border-t border-brand-100 pt-4">
+                                ${card.content}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    cardEl.innerHTML = `
+                        <div class="p-6 flex items-center justify-between cursor-pointer group" onclick="requestOpenCard(${card.id})">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center font-serif text-lg font-bold group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                                    🔒
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-brand-500 uppercase tracking-wider">Carta bloqueada #${card.id}</span>
+                                    <h3 class="font-serif text-lg font-bold text-brand-900 group-hover:text-brand-600 transition-colors">${card.title}</h3>
+                                    <p class="text-xs text-brand-500 mt-0.5">${card.preview}</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                                ➔
+                            </div>
+                        </div>
+                    `;
+                }
+                container.appendChild(cardEl);
+            });
+        }
+
+        function renderCoupons() {
+            const container = document.getElementById('coupons-container');
+            container.innerHTML = '';
+
+            savedCoupons.forEach((coupon) => {
+                const couponEl = document.createElement('div');
+                couponEl.className = `bg-white rounded-2xl p-5 border transition-all duration-300 card-shadow flex flex-col justify-between ${coupon.redeemed ? 'border-emerald-300 bg-emerald-50/30' : 'border-brand-200'}`;
+
+                couponEl.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold ${coupon.redeemed ? 'text-emerald-700 bg-emerald-100' : 'text-brand-600 bg-brand-100'} px-2.5 py-0.5 rounded-full">
+                                ${coupon.redeemed ? '✓ Redimido' : 'Cupón Regalo'}
+                            </span>
+                            <span class="text-base">🎁</span>
+                        </div>
+                        <h4 class="font-serif font-bold text-brand-900 text-base mb-1">${coupon.title}</h4>
+                        <p class="text-xs text-brand-600 mb-4">${coupon.desc}</p>
+                    </div>
+                    <button onclick="redeemCoupon(${coupon.id})" class="w-full py-2 px-3 rounded-xl text-xs font-semibold transition-colors shadow-sm ${coupon.redeemed ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-brand-600 hover:bg-brand-700 text-white'}">
+                        ${coupon.redeemed ? 'Ver Comprobante' : 'Redimir Cupón'}
+                    </button>
+                `;
+                container.appendChild(couponEl);
+            });
+        }
+
+        function requestOpenCard(id) {
+            activeCardId = id;
+            document.getElementById('error-msg').classList.add('hidden');
+            document.getElementById('password-input').value = '';
+            
+            const modal = document.getElementById('password-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+                document.getElementById('password-input').focus();
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('password-modal');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activeCardId = null;
+            }, 200);
+        }
+
+        function verifyPassword(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('password-input').value.trim();
+
+            if (inputVal === currentPassword) {
+                if (!unlockedCards.includes(activeCardId)) {
+                    unlockedCards.push(activeCardId);
+                    localStorage.setItem('unlocked_cards', JSON.stringify(unlockedCards));
+                }
+                closeModal();
+                renderCards();
+                
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+
+        function redeemCoupon(id) {
+            const coupon = savedCoupons.find(c => c.id === id);
+            coupon.redeemed = true;
+            localStorage.setItem('coupons_data', JSON.stringify(savedCoupons));
+            renderCoupons();
+
+            const now = new Date();
+            const timeString = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            document.getElementById('coupon-modal-title').innerText = coupon.title;
+            document.getElementById('coupon-timestamp').innerText = `Canjeado el ${timeString}`;
+            
+            const modal = document.getElementById('coupon-modal');
+            modal.classList.remove('hidden');
+
+            confetti({
+                particleCount: 100,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function closeCouponModal() {
+            document.getElementById('coupon-modal').classList.add('hidden');
+        }
+
+        function resetProgress() {
+            if (confirm("¿Seguro que quieres reiniciar el progreso y bloquear las cartas de nuevo?")) {
+                localStorage.removeItem('unlocked_cards');
+                savedCoupons.forEach(c => c.redeemed = false);
+                localStorage.setItem('coupons_data', JSON.stringify(savedCoupons));
+                unlockedCards = [];
+                renderCards();
+                renderCoupons();
+            }
+        }
+
+        function openSettingsModal() {
+            document.getElementById('setting-master-password').value = currentPassword;
+            const listContainer = document.getElementById('settings-cards-list');
+            listContainer.innerHTML = '';
+
+            savedCards.forEach((card, index) => {
+                listContainer.innerHTML += `
+                    <div class="border border-brand-200 rounded-xl p-3 bg-brand-50/50 mb-3">
+                        <label class="block text-xs font-bold text-brand-800 mb-1">Título Carta ${card.id}:</label>
+                        <input type="text" id="edit-title-${index}" value="${card.title}" class="w-full px-3 py-1.5 rounded-lg border border-brand-200 text-xs mb-2 bg-white">
+                        <label class="block text-xs font-bold text-brand-800 mb-1">Texto (HTML permitido):</label>
+                        <textarea id="edit-content-${index}" rows="3" class="w-full px-3 py-1.5 rounded-lg border border-brand-200 text-xs bg-white">${card.content}</textarea>
+                    </div>
+                `;
+            });
+
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            currentPassword = document.getElementById('setting-master-password').value.trim() || defaultPassword;
+            localStorage.setItem('master_password', currentPassword);
+
+            savedCards.forEach((card, index) => {
+                const newTitle = document.getElementById(`edit-title-${index}`).value;
+                const newContent = document.getElementById(`edit-content-${index}`).value;
+                card.title = newTitle;
+                card.content = newContent;
+            });
+
+            localStorage.setItem('cards_data', JSON.stringify(savedCards));
+            closeSettingsModal();
+            renderCards();
+            alert("¡Cambios guardados con éxito!");
+        }
+
+        renderCards();
+        renderCoupons();
+    </script>
+</body>
+</html>
